@@ -1,11 +1,5 @@
-import {
-  Entity,
-  Column,
-  PrimaryGeneratedColumn,
-  ManyToMany,
-  JoinTable,
-} from 'typeorm';
-import { Class } from '../../classes/entities/class.entity';
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import { Enrollment } from '../../enrollments/entities/enrollment.entity';
 
 @Entity()
 export class Student {
@@ -21,9 +15,6 @@ export class Student {
   @Column()
   email: string;
 
-  @ManyToMany(() => Class, (cls) => cls.students)
-  @JoinTable({
-    name: 'student_class', // Tên bảng trung gian
-  })
-  classes: Class[];
+  @OneToMany(() => Enrollment, (enrollment) => enrollment.student)
+  enrollments: Enrollment[];
 }
