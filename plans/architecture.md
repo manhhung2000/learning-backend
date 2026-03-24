@@ -127,6 +127,28 @@ erDiagram
 
 ## API Endpoints
 
+### Pagination
+
+Tất cả các API GET list hỗ trợ pagination:
+
+| Parameter  | Type   | Default | Mô tả             |
+| ---------- | ------ | ------- | ----------------- |
+| `page`     | number | 1       | Số trang          |
+| `pageSize` | number | 10      | Số item mỗi trang |
+| `search`   | string | -       | Từ khóa tìm kiếm  |
+
+**Response:**
+
+```typescript
+{
+  data: T[],
+  total: number,
+  currentPage: number,
+  pageSize: number,
+  totalPage: number
+}
+```
+
 ### Students
 
 - `POST /students` - Tạo học sinh

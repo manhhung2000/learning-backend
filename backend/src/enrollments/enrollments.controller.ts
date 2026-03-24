@@ -7,11 +7,13 @@ import {
   Param,
   Delete,
   ParseIntPipe,
+  Query,
 } from '@nestjs/common';
 import { EnrollmentsService } from './enrollments.service';
 import { CreateEnrollmentDto } from './dto/create-enrollment.dto';
 import { UpdateEnrollmentDto } from './dto/update-enrollment.dto';
 import { EnrollmentStatus } from './entities/enrollment.entity';
+import { PaginationQueryDto } from '../common/dto/pagination.dto';
 
 @Controller('enrollments')
 export class EnrollmentsController {
@@ -23,8 +25,8 @@ export class EnrollmentsController {
   }
 
   @Get()
-  findAll() {
-    return this.enrollmentsService.findAll();
+  findAll(@Query() paginationQuery: PaginationQueryDto) {
+    return this.enrollmentsService.findAllWithPagination(paginationQuery);
   }
 
   @Get(':id')

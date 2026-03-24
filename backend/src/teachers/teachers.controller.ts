@@ -7,10 +7,12 @@ import {
   Param,
   Delete,
   ParseIntPipe,
+  Query,
 } from '@nestjs/common';
 import { TeachersService } from './teachers.service';
 import { CreateTeacherDto } from './dto/create-teacher.dto';
 import { UpdateTeacherDto } from './dto/update-teacher.dto';
+import { PaginationQueryDto } from '../common/dto/pagination.dto';
 
 @Controller('teachers')
 export class TeachersController {
@@ -22,8 +24,8 @@ export class TeachersController {
   }
 
   @Get()
-  findAll() {
-    return this.teachersService.findAll();
+  findAll(@Query() paginationQuery: PaginationQueryDto) {
+    return this.teachersService.findAllWithPagination(paginationQuery);
   }
 
   @Get(':id')

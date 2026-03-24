@@ -10,6 +10,10 @@ import { CreateEnrollmentDto } from './dto/create-enrollment.dto';
 import { UpdateEnrollmentDto } from './dto/update-enrollment.dto';
 import { Student } from '../students/entities/student.entity';
 import { Course } from '../courses/entities/course.entity';
+import {
+  PaginationQueryDto,
+  PaginatedResult,
+} from '../common/dto/pagination.dto';
 
 @Injectable()
 export class EnrollmentsService {
@@ -65,6 +69,34 @@ export class EnrollmentsService {
     return this.enrollmentRepository.find({
       relations: ['student', 'course'],
     });
+  }
+
+  async findAllWithPagination(
+    paginationQuery: PaginationQueryDto,
+  ): Promise<PaginatedResult<Enrollment>> {
+    const { page = 1, pageSize = 10, search } = paginationQuery;
+    const skip = (page - 1) * pageSize;
+
+    const whereCondition: Record<string, any> = {};
+    if (search) {
+      whereCondition.status = search as EnrollmentStatus;
+    }
+
+    const [data, total] = await this.enrollmentRepository.findAndCount({
+      where: whereCondition,
+      relations: ['student', 'course'],
+      skip,
+      take: pageSize,
+      order: { id: 'DESC' },
+    });
+
+    return {
+      data,
+      total,
+      currentPage: page,
+      pageSize: pageSize,
+      totalPage: Math.ceil(total / pageSize),
+    };
   }
 
   async findOne(id: number): Promise<Enrollment> {

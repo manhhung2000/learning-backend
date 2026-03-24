@@ -1,9 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, Like } from 'typeorm';
 import { Teacher } from './entities/teacher.entity';
 import { CreateTeacherDto } from './dto/create-teacher.dto';
 import { UpdateTeacherDto } from './dto/update-teacher.dto';
+import {
+  PaginationQueryDto,
+  PaginatedResult,
+} from '../common/dto/pagination.dto';
 
 @Injectable()
 export class TeachersService {
@@ -19,6 +23,33 @@ export class TeachersService {
 
   findAll(): Promise<Teacher[]> {
     return this.teacherRepository.find();
+  }
+
+  async findAllWithPagination(
+    paginationQuery: PaginationQueryDto,
+  ): Promise<PaginatedResult<Teacher>> {
+    const { page = 1, pageSize = 10, search } = paginationQuery;
+    const skip = (page - 1) * pageSize;
+
+    const whereCondition: Record<string, any> = {};
+    if (search) {
+      whereCondition.name = Like(`%${search}%`);
+    }
+
+    const [data, total] = await this.teacherRepository.findAndCount({
+      where: whereCondition,
+      skip,
+      take: pageSize,
+      order: { id: 'DESC' },
+    });
+
+    return {
+      data,
+      total,
+      currentPage: page,
+      pageSize: pageSize,
+      totalPage: Math.ceil(total / pageSize),
+    };
   }
 
   async findOne(id: number): Promise<Teacher> {

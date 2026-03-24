@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In } from 'typeorm';
+import { Repository, In, Like } from 'typeorm';
 import { Class } from './entities/class.entity';
 import { Student } from '../students/entities/student.entity';
 import { Course } from '../courses/entities/course.entity';
@@ -11,6 +11,10 @@ import {
 import { CreateClassDto } from './dto/create-class.dto';
 import { UpdateClassDto } from './dto/update-class.dto';
 import { EnrollmentsService } from '../enrollments/enrollments.service';
+import {
+  PaginationQueryDto,
+  PaginatedResult,
+} from '../common/dto/pagination.dto';
 
 @Injectable()
 export class ClassesService {
@@ -36,6 +40,34 @@ export class ClassesService {
       relations: ['courses'],
     });
     return classes;
+  }
+
+  async findAllWithPagination(
+    paginationQuery: PaginationQueryDto,
+  ): Promise<PaginatedResult<Class>> {
+    const { page = 1, pageSize = 10, search } = paginationQuery;
+    const skip = (page - 1) * pageSize;
+
+    const whereCondition: Record<string, any> = {};
+    if (search) {
+      whereCondition.name = Like(`%${search}%`);
+    }
+
+    const [data, total] = await this.classRepository.findAndCount({
+      where: whereCondition,
+      relations: ['courses'],
+      skip,
+      take: pageSize,
+      order: { id: 'DESC' },
+    });
+
+    return {
+      data,
+      total,
+      currentPage: page,
+      pageSize: pageSize,
+      totalPage: Math.ceil(total / pageSize),
+    };
   }
 
   async findOne(id: number): Promise<Class> {

@@ -1,9 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, Like } from 'typeorm';
 import { Subject } from './entities/subject.entity';
 import { CreateSubjectDto } from './dto/create-subject.dto';
 import { UpdateSubjectDto } from './dto/update-subject.dto';
+import {
+  PaginationQueryDto,
+  PaginatedResult,
+} from '../common/dto/pagination.dto';
 
 @Injectable()
 export class SubjectsService {
@@ -19,6 +23,33 @@ export class SubjectsService {
 
   findAll(): Promise<Subject[]> {
     return this.subjectRepository.find();
+  }
+
+  async findAllWithPagination(
+    paginationQuery: PaginationQueryDto,
+  ): Promise<PaginatedResult<Subject>> {
+    const { page = 1, pageSize = 10, search } = paginationQuery;
+    const skip = (page - 1) * pageSize;
+
+    const whereCondition: Record<string, any> = {};
+    if (search) {
+      whereCondition.name = Like(`%${search}%`);
+    }
+
+    const [data, total] = await this.subjectRepository.findAndCount({
+      where: whereCondition,
+      skip,
+      take: pageSize,
+      order: { id: 'DESC' },
+    });
+
+    return {
+      data,
+      total,
+      currentPage: page,
+      pageSize: pageSize,
+      totalPage: Math.ceil(total / pageSize),
+    };
   }
 
   async findOne(id: number): Promise<Subject> {

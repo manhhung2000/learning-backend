@@ -50,6 +50,34 @@ Hệ thống gồm **6 bảng** chính:
 
 ## 🔌 API Endpoints
 
+### Pagination
+
+Tất cả các API GET list hỗ trợ pagination với query parameters:
+
+| Parameter  | Type   | Default | Mô tả             |
+| ---------- | ------ | ------- | ----------------- |
+| `page`     | number | 1       | Số trang hiện tại |
+| `pageSize` | number | 10      | Số item mỗi trang |
+| `search`   | string | -       | Từ khóa tìm kiếm  |
+
+**Response:**
+
+```typescript
+{
+  data: T[],           // Danh sách data
+  total: number,       // Tổng số records
+  currentPage: number,// Trang hiện tại
+  pageSize: number,   // Số item mỗi trang
+  totalPage: number   // Tổng số trang
+}
+```
+
+**Ví dụ:**
+
+```bash
+GET /students?page=1&pageSize=10&search=john
+```
+
 ### Students
 
 - `GET /students` - Lấy danh sách học sinh

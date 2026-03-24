@@ -4,13 +4,17 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, Like } from 'typeorm';
 import { Course } from './entities/course.entity';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
 import { Teacher } from '../teachers/entities/teacher.entity';
 import { Subject } from '../subjects/entities/subject.entity';
 import { Class } from '../classes/entities/class.entity';
+import {
+  PaginationQueryDto,
+  PaginatedResult,
+} from '../common/dto/pagination.dto';
 
 @Injectable()
 export class CoursesService {
@@ -81,6 +85,34 @@ export class CoursesService {
     return this.courseRepository.find({
       relations: ['teacher', 'subject', 'class'],
     });
+  }
+
+  async findAllWithPagination(
+    paginationQuery: PaginationQueryDto,
+  ): Promise<PaginatedResult<Course>> {
+    const { page = 1, pageSize = 10, search } = paginationQuery;
+    const skip = (page - 1) * pageSize;
+
+    const whereCondition: Record<string, any> = {};
+    if (search) {
+      whereCondition.academicYear = Like(`%${search}%`);
+    }
+
+    const [data, total] = await this.courseRepository.findAndCount({
+      where: whereCondition,
+      relations: ['teacher', 'subject', 'class'],
+      skip,
+      take: pageSize,
+      order: { id: 'DESC' },
+    });
+
+    return {
+      data,
+      total,
+      currentPage: page,
+      pageSize: pageSize,
+      totalPage: Math.ceil(total / pageSize),
+    };
   }
 
   async findOne(id: number): Promise<Course> {
