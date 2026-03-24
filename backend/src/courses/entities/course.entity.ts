@@ -3,12 +3,14 @@ import {
   Column,
   PrimaryGeneratedColumn,
   ManyToOne,
+  OneToMany,
   JoinColumn,
   CreateDateColumn,
 } from 'typeorm';
 import { Teacher } from '../../teachers/entities/teacher.entity';
 import { Subject } from '../../subjects/entities/subject.entity';
 import { Class } from '../../classes/entities/class.entity';
+import { Enrollment } from '../../enrollments/entities/enrollment.entity';
 
 @Entity('courses')
 export class Course {
@@ -41,6 +43,9 @@ export class Course {
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
+
+  @OneToMany(() => Enrollment, (enrollment) => enrollment.course)
+  enrollments: Enrollment[];
 
   @ManyToOne(() => Teacher, (teacher) => teacher.courses, {
     onDelete: 'RESTRICT', // Không cho phép xóa giáo viên nếu đang có course

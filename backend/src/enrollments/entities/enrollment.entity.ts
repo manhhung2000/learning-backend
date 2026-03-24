@@ -8,7 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Student } from '../../students/entities/student.entity';
-import { Class } from '../../classes/entities/class.entity';
+import { Course } from '../../courses/entities/course.entity';
 
 export enum EnrollmentStatus {
   ACTIVE = 'active',
@@ -24,8 +24,8 @@ export class Enrollment {
   @Column({ name: 'student_id' })
   studentId: number;
 
-  @Column({ name: 'class_id' })
-  classId: number;
+  @Column({ name: 'course_id' })
+  courseId: number;
 
   @Column({
     name: 'enrolled_at',
@@ -48,15 +48,15 @@ export class Enrollment {
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 
+  @ManyToOne(() => Course, (course) => course.enrollments, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'course_id' })
+  course: Course;
+
   @ManyToOne(() => Student, (student) => student.enrollments, {
-    onDelete: 'CASCADE', // Xóa enrollment khi xóa student
+    onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'student_id' })
   student: Student;
-
-  @ManyToOne(() => Class, (cls) => cls.enrollments, {
-    onDelete: 'CASCADE', // Xóa enrollment khi xóa class
-  })
-  @JoinColumn({ name: 'class_id' })
-  class: Class;
 }

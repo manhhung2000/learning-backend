@@ -3,7 +3,7 @@ import {
   Get,
   Post,
   Body,
-  Patch,
+  Put,
   Param,
   Delete,
 } from '@nestjs/common';
@@ -30,7 +30,7 @@ export class ClassesController {
     return this.classesService.findOne(+id);
   }
 
-  @Patch(':id')
+  @Put(':id')
   update(@Param('id') id: string, @Body() updateClassDto: UpdateClassDto) {
     return this.classesService.update(+id, updateClassDto);
   }
@@ -40,8 +40,8 @@ export class ClassesController {
     return this.classesService.remove(+id);
   }
 
-  @Post(':id/students')
-  addStudent(@Param('id') id: string, @Body('studentId') studentId: number) {
-    return this.classesService.addStudent(+id, studentId);
+  @Get(':id/students')
+  getStudents(@Param('id') id: string) {
+    return this.classesService.getStudents(+id);
   }
 }

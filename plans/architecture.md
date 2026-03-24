@@ -10,8 +10,8 @@ Hệ thống gồm **6 bảng** với quan hệ rõ ràng theo business logic.
 
 ```mermaid
 erDiagram
-    Student ||--o{ Enrollment : "enrolls"
-    Class ||--o{ Enrollment : "has"
+    Student ||--o{ Enrollment : "enrolls in"
+    Course ||--o{ Enrollment : "has"
 
     Class ||--o{ Course : "offers"
     Subject ||--o{ Course : "is offered in"
@@ -20,7 +20,7 @@ erDiagram
     Enrollment {
         int id PK
         int student_id FK
-        int class_id FK
+        int course_id FK
         timestamp enrolled_at
         enum status
     }
@@ -79,17 +79,7 @@ erDiagram
 | phone          | VARCHAR | Số điện thoại |
 | specialization | VARCHAR | Chuyên môn    |
 
-### 5. Enrollment (Đăng ký học)
-
-| Field       | Type      | Ý nghĩa                              | Delete Rule |
-| ----------- | --------- | ------------------------------------ | ----------- |
-| id          | INT       | Khóa chính                           |             |
-| student_id  | INT       | FK → Student                         | CASCADE     |
-| class_id    | INT       | FK → Class                           | CASCADE     |
-| enrolled_at | TIMESTAMP | Ngày đăng ký                         |             |
-| status      | ENUM      | Trạng thái (active/inactive/dropped) |             |
-
-### 6. Course (Khóa học/Lớp môn)
+### 5. Course (Lớp học phần)
 
 | Field         | Type    | Ý nghĩa        | Delete Rule |
 | ------------- | ------- | -------------- | ----------- |
@@ -103,17 +93,27 @@ erDiagram
 | start_date    | DATE    | Ngày bắt đầu   |             |
 | end_date      | DATE    | Ngày kết thúc  |             |
 
+### 6. Enrollment (Đăng ký học)
+
+| Field       | Type      | Ý nghĩa                              | Delete Rule |
+| ----------- | --------- | ------------------------------------ | ----------- |
+| id          | INT       | Khóa chính                           |             |
+| student_id  | INT       | FK → Student                         | CASCADE     |
+| course_id   | INT       | FK → Course                          | CASCADE     |
+| enrolled_at | TIMESTAMP | Ngày đăng ký                         |             |
+| status      | ENUM      | Trạng thái (active/inactive/dropped) |             |
+
 ---
 
 ## Giải thích quan hệ
 
-### Enrollment = "Học sinh đăng ký lớp"
+### Enrollment = "Học sinh đăng ký lớp học phần"
 
-- **Ai?** Student
-- **Đăng ký cái gì?** Class
+- **Ai đăng ký?** Student
+- **Đăng ký cái gì?** Course (lớp học phần)
 - **Khi nào?** enrolled_at
 - **Trạng thái?** status
-- **Tại sao cần?** Để tracking việc học sinh có đang học lớp đó không
+- **Tại sao cần?** Để tracking việc học sinh có đang học lớp học phần đó không
 
 ### Course = "Giáo viên dạy môn cho lớp"
 
@@ -132,7 +132,7 @@ erDiagram
 - `POST /students` - Tạo học sinh
 - `GET /students` - Danh sách học sinh
 - `GET /students/:id` - Chi tiết học sinh
-- `PATCH /students/:id` - Cập nhật học sinh
+- `PUT /students/:id` - Cập nhật học sinh
 - `DELETE /students/:id` - Xóa học sinh
 
 ### Classes
@@ -140,7 +140,7 @@ erDiagram
 - `POST /classes` - Tạo lớp
 - `GET /classes` - Danh sách lớp
 - `GET /classes/:id` - Chi tiết lớp
-- `POST /classes/:id/students` - Thêm học sinh vào lớp
+- `GET /classes/:id/students` - Lấy danh sách học sinh trong lớp
 
 ### Subjects
 
@@ -154,14 +154,14 @@ erDiagram
 
 ### Enrollments
 
-- `POST /enrollments` - Đăng ký học
+- `POST /enrollments` - Đăng ký học (studentId + courseId)
 - `GET /enrollments` - Danh sách đăng ký
-- `GET /enrollments/class/:classId` - Đăng ký theo lớp
+- `GET /enrollments/course/:courseId` - Đăng ký theo lớp học phần
 - `GET /enrollments/student/:studentId` - Đăng ký theo học sinh
 
 ### Courses
 
-- `POST /courses` - Tạo khóa học
-- `GET /courses` - Danh sách khóa học
-- `GET /courses/class/:classId` - Khóa học theo lớp
-- `GET /courses/teacher/:teacherId` - Khóa học theo giáo viên
+- `POST /courses` - Tạo lớp học phần
+- `GET /courses` - Danh sách lớp học phần
+- `GET /courses/class/:classId` - Lớp học phần theo lớp
+- `GET /courses/teacher/:teacherId` - Lớp học phần theo giáo viên

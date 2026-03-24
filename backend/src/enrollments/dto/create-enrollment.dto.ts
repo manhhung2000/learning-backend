@@ -6,7 +6,7 @@ export class CreateEnrollmentDto {
   studentId: number;
 
   @IsNumber()
-  classId: number;
+  courseId: number;
 
   @IsOptional()
   @IsEnum(EnrollmentStatus)

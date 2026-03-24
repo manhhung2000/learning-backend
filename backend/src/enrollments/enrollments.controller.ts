@@ -3,7 +3,7 @@ import {
   Get,
   Post,
   Body,
-  Patch,
+  Put,
   Param,
   Delete,
   ParseIntPipe,
@@ -32,9 +32,9 @@ export class EnrollmentsController {
     return this.enrollmentsService.findOne(id);
   }
 
-  @Get('class/:classId')
-  findByClass(@Param('classId', ParseIntPipe) classId: number) {
-    return this.enrollmentsService.findByClass(classId);
+  @Get('course/:courseId')
+  findByCourse(@Param('courseId', ParseIntPipe) courseId: number) {
+    return this.enrollmentsService.findByCourse(courseId);
   }
 
   @Get('student/:studentId')
@@ -42,7 +42,7 @@ export class EnrollmentsController {
     return this.enrollmentsService.findByStudent(studentId);
   }
 
-  @Patch(':id')
+  @Put(':id')
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateEnrollmentDto: UpdateEnrollmentDto,
@@ -50,7 +50,7 @@ export class EnrollmentsController {
     return this.enrollmentsService.update(id, updateEnrollmentDto);
   }
 
-  @Patch(':id/status')
+  @Put(':id/status')
   updateStatus(
     @Param('id', ParseIntPipe) id: number,
     @Body('status') status: EnrollmentStatus,

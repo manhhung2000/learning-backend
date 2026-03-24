@@ -9,7 +9,7 @@ import { Enrollment, EnrollmentStatus } from './entities/enrollment.entity';
 import { CreateEnrollmentDto } from './dto/create-enrollment.dto';
 import { UpdateEnrollmentDto } from './dto/update-enrollment.dto';
 import { Student } from '../students/entities/student.entity';
-import { Class } from '../classes/entities/class.entity';
+import { Course } from '../courses/entities/course.entity';
 
 @Injectable()
 export class EnrollmentsService {
@@ -18,8 +18,8 @@ export class EnrollmentsService {
     private enrollmentRepository: Repository<Enrollment>,
     @InjectRepository(Student)
     private studentRepository: Repository<Student>,
-    @InjectRepository(Class)
-    private classRepository: Repository<Class>,
+    @InjectRepository(Course)
+    private courseRepository: Repository<Course>,
   ) {}
 
   async create(createEnrollmentDto: CreateEnrollmentDto): Promise<Enrollment> {
@@ -33,13 +33,13 @@ export class EnrollmentsService {
       );
     }
 
-    // Verify class exists
-    const cls = await this.classRepository.findOne({
-      where: { id: createEnrollmentDto.classId },
+    // Verify course exists
+    const course = await this.courseRepository.findOne({
+      where: { id: createEnrollmentDto.courseId },
     });
-    if (!cls) {
+    if (!course) {
       throw new NotFoundException(
-        `Class with ID ${createEnrollmentDto.classId} not found`,
+        `Course with ID ${createEnrollmentDto.courseId} not found`,
       );
     }
 
@@ -47,13 +47,13 @@ export class EnrollmentsService {
     const existingEnrollment = await this.enrollmentRepository.findOne({
       where: {
         studentId: createEnrollmentDto.studentId,
-        classId: createEnrollmentDto.classId,
+        courseId: createEnrollmentDto.courseId,
       },
     });
 
     if (existingEnrollment) {
       throw new ConflictException(
-        `Student ${createEnrollmentDto.studentId} is already enrolled in class ${createEnrollmentDto.classId}`,
+        `Student ${createEnrollmentDto.studentId} is already enrolled in course ${createEnrollmentDto.courseId}`,
       );
     }
 
@@ -63,14 +63,14 @@ export class EnrollmentsService {
 
   async findAll(): Promise<Enrollment[]> {
     return this.enrollmentRepository.find({
-      relations: ['student', 'class'],
+      relations: ['student', 'course'],
     });
   }
 
   async findOne(id: number): Promise<Enrollment> {
     const enrollment = await this.enrollmentRepository.findOne({
       where: { id },
-      relations: ['student', 'class'],
+      relations: ['student', 'course'],
     });
     if (!enrollment) {
       throw new NotFoundException(`Enrollment with ID ${id} not found`);
@@ -78,9 +78,9 @@ export class EnrollmentsService {
     return enrollment;
   }
 
-  async findByClass(classId: number): Promise<Enrollment[]> {
+  async findByCourse(courseId: number): Promise<Enrollment[]> {
     return this.enrollmentRepository.find({
-      where: { classId },
+      where: { courseId },
       relations: ['student'],
     });
   }
@@ -88,7 +88,7 @@ export class EnrollmentsService {
   async findByStudent(studentId: number): Promise<Enrollment[]> {
     return this.enrollmentRepository.find({
       where: { studentId },
-      relations: ['class'],
+      relations: ['course'],
     });
   }
 

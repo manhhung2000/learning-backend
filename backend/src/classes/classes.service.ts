@@ -1,12 +1,9 @@
-import {
-  Injectable,
-  NotFoundException,
-  ConflictException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { Class } from './entities/class.entity';
 import { Student } from '../students/entities/student.entity';
+import { Course } from '../courses/entities/course.entity';
 import {
   Enrollment,
   EnrollmentStatus,
@@ -22,6 +19,8 @@ export class ClassesService {
     private classRepository: Repository<Class>,
     @InjectRepository(Student)
     private studentRepository: Repository<Student>,
+    @InjectRepository(Course)
+    private courseRepository: Repository<Course>,
     @InjectRepository(Enrollment)
     private enrollmentRepository: Repository<Enrollment>,
     private enrollmentsService: EnrollmentsService,
@@ -33,31 +32,20 @@ export class ClassesService {
   }
 
   async findAll(): Promise<Class[]> {
-    const classes = await this.classRepository.find();
-    // Fetch students for each class through Enrollment
-    for (const cls of classes) {
-      const enrollments = await this.enrollmentRepository.find({
-        where: { classId: cls.id, status: EnrollmentStatus.ACTIVE },
-        relations: ['student'],
-      });
-      cls.students = enrollments.map((e) => e.student);
-    }
+    const classes = await this.classRepository.find({
+      relations: ['courses'],
+    });
     return classes;
   }
 
   async findOne(id: number): Promise<Class> {
     const cls = await this.classRepository.findOne({
       where: { id },
+      relations: ['courses'],
     });
     if (!cls) {
       throw new NotFoundException(`Class with ID ${id} not found`);
     }
-    // Fetch students through Enrollment
-    const enrollments = await this.enrollmentRepository.find({
-      where: { classId: cls.id, status: EnrollmentStatus.ACTIVE },
-      relations: ['student'],
-    });
-    cls.students = enrollments.map((e) => e.student);
     return cls;
   }
 
@@ -72,43 +60,28 @@ export class ClassesService {
     await this.classRepository.remove(cls);
   }
 
-  async addStudent(classId: number, studentId: number): Promise<Class> {
-    const cls = await this.classRepository.findOne({
-      where: { id: classId },
-    });
-    if (!cls) {
-      throw new NotFoundException(`Class with ID ${classId} not found`);
-    }
-
-    const student = await this.studentRepository.findOne({
-      where: { id: studentId },
-    });
-    if (!student) {
-      throw new NotFoundException(`Student with ID ${studentId} not found`);
-    }
-
-    // Use EnrollmentsService to enroll student
-    try {
-      await this.enrollmentsService.create({
-        studentId,
-        classId,
-      });
-    } catch (error) {
-      // If already enrolled, ignore the error
-      if (error instanceof ConflictException) {
-        return cls;
-      }
-      throw error;
-    }
-
-    return cls;
-  }
-
   async getStudents(classId: number): Promise<Student[]> {
+    // Get courses for this class
+    const courses = await this.courseRepository.find({
+      where: { classId },
+    });
+
+    if (courses.length === 0) {
+      return [];
+    }
+
+    // Get course IDs
+    const courseIds = courses.map((c) => c.id);
+
+    // Get enrollments for these courses
     const enrollments = await this.enrollmentRepository.find({
-      where: { classId, status: EnrollmentStatus.ACTIVE },
+      where: {
+        courseId: In(courseIds),
+        status: EnrollmentStatus.ACTIVE,
+      },
       relations: ['student'],
     });
+
     return enrollments.map((e) => e.student);
   }
 }
