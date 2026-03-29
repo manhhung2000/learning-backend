@@ -8,18 +8,24 @@ import {
   Delete,
   ParseIntPipe,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { EnrollmentsService } from './enrollments.service';
 import { CreateEnrollmentDto } from './dto/create-enrollment.dto';
 import { UpdateEnrollmentDto } from './dto/update-enrollment.dto';
 import { EnrollmentStatus } from './entities/enrollment.entity';
 import { PaginationQueryDto } from '../common/dto/pagination.dto';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../common/guards/roles.guard';
+import { Roles } from '../common/decorators/roles.decorator';
 
 @Controller('enrollments')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class EnrollmentsController {
   constructor(private readonly enrollmentsService: EnrollmentsService) {}
 
   @Post()
+  @Roles('ADMIN', 'TEACHER', 'STUDENT')
   create(@Body() createEnrollmentDto: CreateEnrollmentDto) {
     return this.enrollmentsService.create(createEnrollmentDto);
   }
@@ -45,6 +51,7 @@ export class EnrollmentsController {
   }
 
   @Put(':id')
+  @Roles('ADMIN', 'TEACHER')
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateEnrollmentDto: UpdateEnrollmentDto,
@@ -53,6 +60,7 @@ export class EnrollmentsController {
   }
 
   @Put(':id/status')
+  @Roles('ADMIN', 'TEACHER')
   updateStatus(
     @Param('id', ParseIntPipe) id: number,
     @Body('status') status: EnrollmentStatus,
@@ -61,6 +69,7 @@ export class EnrollmentsController {
   }
 
   @Delete(':id')
+  @Roles('ADMIN')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.enrollmentsService.remove(id);
   }

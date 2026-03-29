@@ -8,17 +8,23 @@ import {
   Delete,
   ParseIntPipe,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { CoursesService } from './courses.service';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
 import { PaginationQueryDto } from '../common/dto/pagination.dto';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../common/guards/roles.guard';
+import { Roles } from '../common/decorators/roles.decorator';
 
 @Controller('courses')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class CoursesController {
   constructor(private readonly coursesService: CoursesService) {}
 
   @Post()
+  @Roles('ADMIN', 'TEACHER')
   create(@Body() createDto: CreateCourseDto) {
     return this.coursesService.create(createDto);
   }
@@ -44,6 +50,7 @@ export class CoursesController {
   }
 
   @Put(':id')
+  @Roles('ADMIN', 'TEACHER')
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateDto: UpdateCourseDto,
@@ -52,6 +59,7 @@ export class CoursesController {
   }
 
   @Delete(':id')
+  @Roles('ADMIN')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.coursesService.remove(id);
   }

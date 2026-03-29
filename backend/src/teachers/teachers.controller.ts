@@ -8,17 +8,23 @@ import {
   Delete,
   ParseIntPipe,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { TeachersService } from './teachers.service';
 import { CreateTeacherDto } from './dto/create-teacher.dto';
 import { UpdateTeacherDto } from './dto/update-teacher.dto';
 import { PaginationQueryDto } from '../common/dto/pagination.dto';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../common/guards/roles.guard';
+import { Roles } from '../common/decorators/roles.decorator';
 
 @Controller('teachers')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class TeachersController {
   constructor(private readonly teachersService: TeachersService) {}
 
   @Post()
+  @Roles('ADMIN', 'TEACHER')
   create(@Body() createTeacherDto: CreateTeacherDto) {
     return this.teachersService.create(createTeacherDto);
   }
@@ -34,6 +40,7 @@ export class TeachersController {
   }
 
   @Put(':id')
+  @Roles('ADMIN', 'TEACHER')
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateTeacherDto: UpdateTeacherDto,
@@ -42,6 +49,7 @@ export class TeachersController {
   }
 
   @Delete(':id')
+  @Roles('ADMIN')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.teachersService.remove(id);
   }

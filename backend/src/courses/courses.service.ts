@@ -8,7 +8,7 @@ import { Repository, Like } from 'typeorm';
 import { Course } from './entities/course.entity';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
-import { Teacher } from '../teachers/entities/teacher.entity';
+import { User, UserRole } from '../users/entities/user.entity';
 import { Subject } from '../subjects/entities/subject.entity';
 import { Class } from '../classes/entities/class.entity';
 import {
@@ -21,8 +21,8 @@ export class CoursesService {
   constructor(
     @InjectRepository(Course)
     private courseRepository: Repository<Course>,
-    @InjectRepository(Teacher)
-    private teacherRepository: Repository<Teacher>,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
     @InjectRepository(Subject)
     private subjectRepository: Repository<Subject>,
     @InjectRepository(Class)
@@ -30,13 +30,18 @@ export class CoursesService {
   ) {}
 
   async create(createDto: CreateCourseDto): Promise<Course> {
-    // Verify teacher exists
-    const teacher = await this.teacherRepository.findOne({
+    // Verify teacher exists and has TEACHER role
+    const teacher = await this.userRepository.findOne({
       where: { id: createDto.teacherId },
     });
     if (!teacher) {
       throw new NotFoundException(
-        `Teacher with ID ${createDto.teacherId} not found`,
+        `User with ID ${createDto.teacherId} not found`,
+      );
+    }
+    if (teacher.role !== UserRole.TEACHER) {
+      throw new ConflictException(
+        `User with ID ${createDto.teacherId} is not a teacher`,
       );
     }
 
@@ -93,7 +98,7 @@ export class CoursesService {
     const { page = 1, pageSize = 10, search } = paginationQuery;
     const skip = (page - 1) * pageSize;
 
-    const whereCondition: Record<string, any> = {};
+    const whereCondition: Record<string, unknown> = {};
     if (search) {
       whereCondition.academicYear = Like(`%${search}%`);
     }

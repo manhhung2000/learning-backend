@@ -7,7 +7,7 @@ import {
   JoinColumn,
   CreateDateColumn,
 } from 'typeorm';
-import { Teacher } from '../../teachers/entities/teacher.entity';
+import { User } from '../../users/entities/user.entity';
 import { Subject } from '../../subjects/entities/subject.entity';
 import { Class } from '../../classes/entities/class.entity';
 import { Enrollment } from '../../enrollments/entities/enrollment.entity';
@@ -33,7 +33,7 @@ export class Course {
   semester: string;
 
   @Column({ type: 'jsonb', nullable: true })
-  schedule: Record<string, any>;
+  schedule: Record<string, unknown>;
 
   @Column({ name: 'start_date', type: 'date', nullable: true })
   startDate: Date;
@@ -47,20 +47,20 @@ export class Course {
   @OneToMany(() => Enrollment, (enrollment) => enrollment.course)
   enrollments: Enrollment[];
 
-  @ManyToOne(() => Teacher, (teacher) => teacher.courses, {
-    onDelete: 'RESTRICT', // Không cho phép xóa giáo viên nếu đang có course
+  @ManyToOne(() => User, (user) => user.courses, {
+    onDelete: 'RESTRICT',
   })
   @JoinColumn({ name: 'teacher_id' })
-  teacher: Teacher;
+  teacher: User;
 
   @ManyToOne(() => Subject, {
-    onDelete: 'RESTRICT', // Không cho phép xóa môn học nếu đang được dạy
+    onDelete: 'RESTRICT',
   })
   @JoinColumn({ name: 'subject_id' })
   subject: Subject;
 
   @ManyToOne(() => Class, {
-    onDelete: 'RESTRICT', // Không cho phép xóa lớp học nếu đang có course
+    onDelete: 'RESTRICT',
   })
   @JoinColumn({ name: 'class_id' })
   class: Class;
