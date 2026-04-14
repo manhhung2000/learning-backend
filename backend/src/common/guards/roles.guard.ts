@@ -24,10 +24,8 @@ export class RolesGuard implements CanActivate {
       return true;
     }
 
-    /* eslint-disable @typescript-eslint/no-explicit-any */
     const request = context.switchToHttp().getRequest<RequestWithUser>();
     const user = request.user;
-    /* eslint-enable @typescript-eslint/no-explicit-any */
 
     // Check if user exists and has role
     if (!user || !user.role) {
