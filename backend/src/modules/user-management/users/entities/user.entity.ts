@@ -2,17 +2,9 @@ import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
-  OneToMany,
   CreateDateColumn,
 } from 'typeorm';
-import { Course } from '@modules/class-management/courses/entities/course.entity';
-import { Enrollment } from '@modules/class-management/enrollments/entities/enrollment.entity';
-
-export enum UserRole {
-  STUDENT = 'STUDENT',
-  TEACHER = 'TEACHER',
-  ADMIN = 'ADMIN',
-}
+import { UserRole } from './user-role.enum';
 
 @Entity('users')
 export class User {
@@ -36,11 +28,4 @@ export class User {
 
   @CreateDateColumn()
   createdAt: Date;
-
-  // Relations
-  @OneToMany(() => Course, (course: Course) => course.teacher)
-  courses: Course[];
-
-  @OneToMany(() => Enrollment, (enrollment: Enrollment) => enrollment.student)
-  enrollments: Enrollment[];
 }

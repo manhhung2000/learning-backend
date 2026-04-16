@@ -46,7 +46,7 @@ export class Course {
   @OneToMany(() => Enrollment, (enrollment) => enrollment.course)
   enrollments: Enrollment[];
 
-  @ManyToOne(() => User, (user: User) => user.courses, {
+  @ManyToOne(() => User, {
     onDelete: 'RESTRICT',
   })
   @JoinColumn({ name: 'teacher_id' })

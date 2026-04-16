@@ -66,7 +66,7 @@ export class UsersService {
       .orderBy('user.id', 'DESC');
 
     if (role) {
-      queryBuilder.where('user.role = :role', { role });
+      queryBuilder.andWhere('user.role = :role', { role });
     }
 
     if (search) {

@@ -8,10 +8,8 @@ import { Repository, Like } from 'typeorm';
 import { Course } from './entities/course.entity';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
-import {
-  User,
-  UserRole,
-} from '@modules/user-management/users/entities/user.entity';
+import { User } from '@modules/user-management/users/entities/user.entity';
+import { UserRole } from '@modules/user-management/users/entities/user-role.enum';
 import { Class } from '@modules/class-management/classes/entities/class.entity';
 import {
   PaginationQueryDto,
