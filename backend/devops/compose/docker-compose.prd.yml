@@ -4,37 +4,31 @@ services:
     container_name: db
     restart: always
     env_file:
-      - ../.env
+      - ../../.env
     environment:
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_DATABASE}
     ports:
-      - "${DB_PORT}:5432"
+      - "${DB_PORT}:${DB_PORT}"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  adminer:
-    image: adminer
-    restart: always
-    ports:
-      - "8080:8080"
-
-  backend:
+  api:
     build:
-      context: ..
-      dockerfile: ${DOCKERFILE:-docker/app.Dockerfile.dev}
-    container_name: backend
+      context: ../..
+      dockerfile: devops/docker/Dockerfile
+      target: production
+    container_name: api
     restart: always
     env_file:
-      - ../.env
+      - ../../.env
     environment:
       DB_HOST: db
-      NODE_ENV: ${NODE_ENV:-development}
+      DB_PORT: ${DB_PORT}
+      NODE_ENV: production
     ports:
       - "${PORT}:${PORT}"
-    volumes:
-      - ../src:/app/src
     depends_on:
       - db
 

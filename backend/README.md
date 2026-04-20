@@ -1,80 +1,119 @@
-# Learning Management System (LMS) - Backend
+# Learning Management System — Backend
 
-A robust Learning Management System built with NestJS, providing comprehensive class, course, and enrollment management features for Teachers and Students.
+NestJS REST API for managing classes, courses, and student enrollments with JWT-based authentication and role-based access control.
 
-## 🚀 Technical Stack
+## Tech Stack
 
-- **Framework**: [NestJS](https://nestjs.com/) (v11)
-- **Database**: [PostgreSQL](https://www.postgresql.org/) (v15)
-- **ORM**: [TypeORM](https://typeorm.io/)
-- **Authentication**: JWT (Passport-JWT)
-- **Infrastructure**: Docker & Docker Compose
-- **Tools**: Adminer (Database Management)
+| Layer | Technology |
+|---|---|
+| Framework | NestJS v11 |
+| Database | PostgreSQL 15 |
+| ORM | TypeORM |
+| Auth | JWT (Passport-JWT) |
+| Infrastructure | Docker & Docker Compose |
 
-## 📂 Project Structure & Architecture
+## Project Structure
 
-The project follows a **Module-based** architecture and utilizes **TypeScript Import Aliases** for optimal maintainability:
+```
+backend/
+├── src/
+│   ├── common/                  # Guards, decorators, shared DTOs
+│   ├── modules/
+│   │   ├── class-management/    # Classes, Courses, Enrollments
+│   │   └── user-management/     # Auth, Users
+│   └── main.ts
+├── devops/
+│   ├── docker/
+│   │   ├── Dockerfile           # Multi-stage (development / production)
+│   │   └── entrypoint.sh
+│   └── compose/
+│       ├── docker-compose.dev.yml
+│       └── docker-compose.prd.yml
+└── .dockerignore
+```
 
-- `@modules/`: Core business modules (User, Class, Course, Enrollment).
-- `@common/`: Shared components (Guards, Decorators, Global DTOs).
-- `@src/`: Root path to the source directory.
+**TypeScript path aliases:**
+- `@modules/` → `src/modules/`
+- `@common/` → `src/common/`
+- `@src/` → `src/`
 
-## ⚙️ Getting Started
+## Getting Started
 
-### 1. Prerequisites
-- Docker & Docker Compose
-- Node.js (v18+) & npm
+### 1. Environment
 
-### 2. Environment Setup
-Create a `.env` file in the root directory with the following content:
+Create `.env` in the `backend/` directory:
+
 ```env
+PORT=3000
+
 DB_HOST=localhost
-DB_PORT=5433
+DB_PORT=5432
 DB_USERNAME=postgres
 DB_PASSWORD=postgres
 DB_DATABASE=school
-JWT_SECRET=yoursecretkey
+
+JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
 ```
 
-### 3. Run Infrastructure (Database & Adminer)
-Use Docker to start PostgreSQL and Adminer:
-```bash
-docker compose up -d
-```
-- **Postgres**: Running on port `5433`.
-- **Adminer**: Accessible at [http://localhost:8080](http://localhost:8080) (Server: `db`, User/Pass: `postgres`).
+### 2. Run with Docker (recommended)
 
-### 4. Run Application
 ```bash
-# Install dependencies
+# Development — hot reload, Adminer included
+docker compose -f ./devops/compose/docker-compose.dev.yml --env-file .env up --build
+
+# Production
+docker compose -f ./devops/compose/docker-compose.prd.yml --env-file .env up --build
+```
+
+- **API**: `http://localhost:3000`
+- **Adminer**: `http://localhost:8080` — Server: `db`, User/Pass: `postgres`
+
+### 3. Run locally (without Docker)
+
+```bash
 npm install
-
-# Run in development mode
 npm run start:dev
 ```
 
-## 🛠 Key API Endpoints
+> Requires a running PostgreSQL instance with credentials matching `.env`.
 
-### Authentication (`/auth`)
-- `POST /auth/register`: Register an account (Roles: TEACHER, STUDENT, ADMIN).
-- `POST /auth/login`: Login and receive a JWT Access Token.
+## API Endpoints
 
-### Class Management (`/classes`)
-- `POST /classes`: Create a new class (Requires ADMIN/TEACHER role).
-- `GET /classes`: Fetch all classes (with pagination).
+### Auth — `/auth`
 
-### Course Management (`/courses`)
-- `POST /courses`: Create a course (linked to a Teacher and a Class).
-- `GET /courses`: Fetch all courses.
+| Method | Path | Description | Auth |
+|---|---|---|---|
+| POST | `/auth/register` | Register (roles: ADMIN, TEACHER, STUDENT) | — |
+| POST | `/auth/login` | Login, returns JWT access token | — |
 
-### Student Enrollments (`/enrollments`)
-- `POST /enrollments`: Enroll a student into a specific course.
+### Classes — `/classes`
 
-## 🧹 Code Standards
-The project uses **Prettier** for consistent code formatting:
+| Method | Path | Description | Auth |
+|---|---|---|---|
+| POST | `/classes` | Create a class | ADMIN, TEACHER |
+| GET | `/classes` | List all classes (paginated) | JWT |
+
+### Courses — `/courses`
+
+| Method | Path | Description | Auth |
+|---|---|---|---|
+| POST | `/courses` | Create a course | ADMIN, TEACHER |
+| GET | `/courses` | List all courses (paginated) | JWT |
+
+### Enrollments — `/enrollments`
+
+| Method | Path | Description | Auth |
+|---|---|---|---|
+| POST | `/enrollments` | Enroll a student in a course | JWT |
+
+## Scripts
+
 ```bash
-npm run format
+npm run start:dev   # Development with hot reload
+npm run build       # Compile TypeScript
+npm run start:prod  # Run compiled output
+npm run lint        # ESLint
+npm run format      # Prettier
+npm run test        # Unit tests
+npm run test:e2e    # E2E tests
 ```
-
----
-**Status**: Stable and Handover Ready.

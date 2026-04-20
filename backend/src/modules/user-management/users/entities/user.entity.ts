@@ -4,7 +4,12 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
 } from 'typeorm';
-import { UserRole } from './user-role.enum';
+
+export enum UserRole {
+  STUDENT = 'STUDENT',
+  TEACHER = 'TEACHER',
+  ADMIN = 'ADMIN',
+}
 
 @Entity('users')
 export class User {
