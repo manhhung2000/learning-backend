@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { CacheService } from '@common/services/cache.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In, Like, FindOptionsWhere } from 'typeorm';
 import { Class } from './entities/class.entity';
@@ -25,6 +26,7 @@ export class ClassesService {
     @InjectRepository(Enrollment)
     private enrollmentRepository: Repository<Enrollment>,
     private enrollmentsService: EnrollmentsService,
+    private cacheService: CacheService,
   ) {}
 
   create(createClassDto: CreateClassDto): Promise<Class> {
@@ -63,36 +65,43 @@ export class ClassesService {
   }
 
   async findOne(id: number): Promise<Class> {
-    const cls = await this.classRepository.findOne({
-      where: { id },
-      relations: ['courses'],
+    return this.cacheService.getOrSet(`class:${id}`, async () => {
+      const cls = await this.classRepository.findOne({
+        where: { id },
+        relations: ['courses'],
+      });
+      if (!cls) throw new NotFoundException(`Class with ID ${id} not found`);
+      return cls;
     });
-    if (!cls) throw new NotFoundException(`Class with ID ${id} not found`);
-    return cls;
   }
 
   async update(id: number, updateClassDto: UpdateClassDto): Promise<Class> {
     const cls = await this.findOne(id);
     Object.assign(cls, updateClassDto);
-    return this.classRepository.save(cls);
+    const updated = await this.classRepository.save(cls);
+    await this.cacheService.del(`class:${id}`);
+    await this.cacheService.del(`class:${id}:students`);
+    return updated;
   }
 
   async remove(id: number): Promise<void> {
     const cls = await this.findOne(id);
     await this.classRepository.remove(cls);
+    await this.cacheService.del(`class:${id}`);
+    await this.cacheService.del(`class:${id}:students`);
   }
 
-  // Trả về danh sách cognitoId của students đang active trong class
   async getStudents(classId: number): Promise<string[]> {
-    const courses = await this.courseRepository.find({ where: { classId } });
-    if (courses.length === 0) return [];
+    return this.cacheService.getOrSet(`class:${classId}:students`, async () => {
+      const courses = await this.courseRepository.find({ where: { classId } });
+      if (courses.length === 0) return [];
 
-    const courseIds = courses.map((c) => c.id);
-    const enrollments = await this.enrollmentRepository.find({
-      where: { courseId: In(courseIds), status: EnrollmentStatus.ACTIVE },
+      const courseIds = courses.map((c) => c.id);
+      const enrollments = await this.enrollmentRepository.find({
+        where: { courseId: In(courseIds), status: EnrollmentStatus.ACTIVE },
+      });
+
+      return [...new Set(enrollments.map((e) => e.cognitoId))];
     });
-
-    // Unique cognitoIds
-    return [...new Set(enrollments.map((e) => e.cognitoId))];
   }
 }

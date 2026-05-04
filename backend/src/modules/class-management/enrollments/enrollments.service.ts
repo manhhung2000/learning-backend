@@ -3,6 +3,7 @@ import {
   NotFoundException,
   ConflictException,
 } from '@nestjs/common';
+import { CacheService } from '@common/services/cache.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Enrollment, EnrollmentStatus } from './entities/enrollment.entity';
@@ -21,6 +22,7 @@ export class EnrollmentsService {
     private enrollmentRepository: Repository<Enrollment>,
     @InjectRepository(Course)
     private courseRepository: Repository<Course>,
+    private cacheService: CacheService,
   ) {}
 
   async create(createEnrollmentDto: CreateEnrollmentDto): Promise<Enrollment> {
@@ -44,7 +46,10 @@ export class EnrollmentsService {
     }
 
     const enrollment = this.enrollmentRepository.create(createEnrollmentDto);
-    return this.enrollmentRepository.save(enrollment);
+    const saved = await this.enrollmentRepository.save(enrollment);
+    await this.cacheService.del(`enrollments:course:${saved.courseId}`);
+    await this.cacheService.del(`enrollments:student:${saved.cognitoId}`);
+    return saved;
   }
 
   async findAll(): Promise<Enrollment[]> {
@@ -80,25 +85,33 @@ export class EnrollmentsService {
   }
 
   async findOne(id: number): Promise<Enrollment> {
-    const enrollment = await this.enrollmentRepository.findOne({
-      where: { id },
-      relations: ['course'],
+    return this.cacheService.getOrSet(`enrollment:${id}`, async () => {
+      const enrollment = await this.enrollmentRepository.findOne({
+        where: { id },
+        relations: ['course'],
+      });
+      if (!enrollment)
+        throw new NotFoundException(`Enrollment with ID ${id} not found`);
+      return enrollment;
     });
-    if (!enrollment) {
-      throw new NotFoundException(`Enrollment with ID ${id} not found`);
-    }
-    return enrollment;
   }
 
   async findByCourse(courseId: number): Promise<Enrollment[]> {
-    return this.enrollmentRepository.find({ where: { courseId } });
+    return this.cacheService.getOrSet(
+      `enrollments:course:${courseId}`,
+      () => this.enrollmentRepository.find({ where: { courseId } }),
+    );
   }
 
   async findByCognitoId(cognitoId: string): Promise<Enrollment[]> {
-    return this.enrollmentRepository.find({
-      where: { cognitoId },
-      relations: ['course'],
-    });
+    return this.cacheService.getOrSet(
+      `enrollments:student:${cognitoId}`,
+      () =>
+        this.enrollmentRepository.find({
+          where: { cognitoId },
+          relations: ['course'],
+        }),
+    );
   }
 
   async update(
@@ -107,12 +120,19 @@ export class EnrollmentsService {
   ): Promise<Enrollment> {
     const enrollment = await this.findOne(id);
     Object.assign(enrollment, updateEnrollmentDto);
-    return this.enrollmentRepository.save(enrollment);
+    const updated = await this.enrollmentRepository.save(enrollment);
+    await this.cacheService.del(`enrollment:${id}`);
+    await this.cacheService.del(`enrollments:course:${enrollment.courseId}`);
+    await this.cacheService.del(`enrollments:student:${enrollment.cognitoId}`);
+    return updated;
   }
 
   async remove(id: number): Promise<void> {
     const enrollment = await this.findOne(id);
     await this.enrollmentRepository.remove(enrollment);
+    await this.cacheService.del(`enrollment:${id}`);
+    await this.cacheService.del(`enrollments:course:${enrollment.courseId}`);
+    await this.cacheService.del(`enrollments:student:${enrollment.cognitoId}`);
   }
 
   async updateStatus(
@@ -121,6 +141,10 @@ export class EnrollmentsService {
   ): Promise<Enrollment> {
     const enrollment = await this.findOne(id);
     enrollment.status = status;
-    return this.enrollmentRepository.save(enrollment);
+    const updated = await this.enrollmentRepository.save(enrollment);
+    await this.cacheService.del(`enrollment:${id}`);
+    await this.cacheService.del(`enrollments:course:${enrollment.courseId}`);
+    await this.cacheService.del(`enrollments:student:${enrollment.cognitoId}`);
+    return updated;
   }
 }

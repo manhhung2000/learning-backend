@@ -1,6 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { CacheModule } from '@nestjs/cache-manager';
+import KeyvRedis from '@keyv/redis';
+import { CacheServiceModule } from '@common/services/cache.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ClassesModule } from '@modules/class-management/classes/classes.module';
@@ -31,6 +34,21 @@ import { AuthModule } from '@modules/user-management/auth/auth.module';
       }),
       inject: [ConfigService],
     }),
+    CacheModule.registerAsync({
+      isGlobal: true,
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => {
+        const host = configService.get('REDIS_HOST', 'localhost');
+        const port = configService.get<number>('REDIS_PORT', 6379);
+        const ttl = configService.get<number>('REDIS_TTL', 300);
+        return {
+          stores: [new KeyvRedis(`redis://${host}:${port}`)],
+          ttl: ttl * 1000,
+        };
+      },
+      inject: [ConfigService],
+    }),
+    CacheServiceModule,
     AuthModule,
     ClassesModule,
     EnrollmentsModule,

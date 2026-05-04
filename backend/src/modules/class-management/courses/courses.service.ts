@@ -3,6 +3,7 @@ import {
   NotFoundException,
   ConflictException,
 } from '@nestjs/common';
+import { CacheService } from '@common/services/cache.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Like } from 'typeorm';
 import { Course } from './entities/course.entity';
@@ -21,6 +22,7 @@ export class CoursesService {
     private courseRepository: Repository<Course>,
     @InjectRepository(Class)
     private classRepository: Repository<Class>,
+    private cacheService: CacheService,
   ) {}
 
   async create(createDto: CreateCourseDto): Promise<Course> {
@@ -83,12 +85,15 @@ export class CoursesService {
   }
 
   async findOne(id: number): Promise<Course> {
-    const course = await this.courseRepository.findOne({
-      where: { id },
-      relations: ['class'],
+    return this.cacheService.getOrSet(`course:${id}`, async () => {
+      const course = await this.courseRepository.findOne({
+        where: { id },
+        relations: ['class'],
+      });
+      if (!course)
+        throw new NotFoundException(`Course with ID ${id} not found`);
+      return course;
     });
-    if (!course) throw new NotFoundException(`Course with ID ${id} not found`);
-    return course;
   }
 
   async findByClass(classId: number): Promise<Course[]> {
@@ -105,11 +110,14 @@ export class CoursesService {
   async update(id: number, updateDto: UpdateCourseDto): Promise<Course> {
     const course = await this.findOne(id);
     Object.assign(course, updateDto);
-    return this.courseRepository.save(course);
+    const updated = await this.courseRepository.save(course);
+    await this.cacheService.del(`course:${id}`);
+    return updated;
   }
 
   async remove(id: number): Promise<void> {
     const course = await this.findOne(id);
     await this.courseRepository.remove(course);
+    await this.cacheService.del(`course:${id}`);
   }
 }
