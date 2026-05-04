@@ -8,8 +8,6 @@ import { Repository, Like } from 'typeorm';
 import { Course } from './entities/course.entity';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
-import { User } from '@modules/user-management/users/entities/user.entity';
-import { UserRole } from '@modules/user-management/users/entities/user.entity';
 import { Class } from '@modules/class-management/classes/entities/class.entity';
 import {
   PaginationQueryDto,
@@ -21,29 +19,11 @@ export class CoursesService {
   constructor(
     @InjectRepository(Course)
     private courseRepository: Repository<Course>,
-    @InjectRepository(User)
-    private userRepository: Repository<User>,
     @InjectRepository(Class)
     private classRepository: Repository<Class>,
   ) {}
 
   async create(createDto: CreateCourseDto): Promise<Course> {
-    // Verify teacher exists and has TEACHER role
-    const teacher = await this.userRepository.findOne({
-      where: { id: createDto.teacherId },
-    });
-    if (!teacher) {
-      throw new NotFoundException(
-        `User with ID ${createDto.teacherId} not found`,
-      );
-    }
-    if (teacher.role !== UserRole.TEACHER) {
-      throw new ConflictException(
-        `User with ID ${createDto.teacherId} is not a teacher`,
-      );
-    }
-
-    // Verify class exists
     const cls = await this.classRepository.findOne({
       where: { id: createDto.classId },
     });
@@ -53,17 +33,15 @@ export class CoursesService {
       );
     }
 
-    // Check if course already exists
     const existing = await this.courseRepository.findOne({
       where: {
-        teacherId: createDto.teacherId,
+        cognitoId: createDto.cognitoId,
         subjectName: createDto.subjectName,
         classId: createDto.classId,
         academicYear: createDto.academicYear,
         semester: createDto.semester,
       },
     });
-
     if (existing) {
       throw new ConflictException(
         `Course already exists for this teacher, subject, class, and semester`,
@@ -75,9 +53,7 @@ export class CoursesService {
   }
 
   findAll(): Promise<Course[]> {
-    return this.courseRepository.find({
-      relations: ['teacher', 'class'],
-    });
+    return this.courseRepository.find({ relations: ['class'] });
   }
 
   async findAllWithPagination(
@@ -87,13 +63,11 @@ export class CoursesService {
     const skip = (page - 1) * pageSize;
 
     const whereCondition: Record<string, unknown> = {};
-    if (search) {
-      whereCondition.subjectName = Like(`%${search}%`);
-    }
+    if (search) whereCondition.subjectName = Like(`%${search}%`);
 
     const [data, total] = await this.courseRepository.findAndCount({
       where: whereCondition,
-      relations: ['teacher', 'class'],
+      relations: ['class'],
       skip,
       take: pageSize,
       order: { id: 'DESC' },
@@ -103,7 +77,7 @@ export class CoursesService {
       data,
       total,
       currentPage: page,
-      pageSize: pageSize,
+      pageSize,
       totalPage: Math.ceil(total / pageSize),
     };
   }
@@ -111,24 +85,19 @@ export class CoursesService {
   async findOne(id: number): Promise<Course> {
     const course = await this.courseRepository.findOne({
       where: { id },
-      relations: ['teacher', 'class'],
+      relations: ['class'],
     });
-    if (!course) {
-      throw new NotFoundException(`Course with ID ${id} not found`);
-    }
+    if (!course) throw new NotFoundException(`Course with ID ${id} not found`);
     return course;
   }
 
   async findByClass(classId: number): Promise<Course[]> {
-    return this.courseRepository.find({
-      where: { classId },
-      relations: ['teacher'],
-    });
+    return this.courseRepository.find({ where: { classId } });
   }
 
-  async findByTeacher(teacherId: number): Promise<Course[]> {
+  async findByCognitoId(cognitoId: string): Promise<Course[]> {
     return this.courseRepository.find({
-      where: { teacherId },
+      where: { cognitoId },
       relations: ['class'],
     });
   }

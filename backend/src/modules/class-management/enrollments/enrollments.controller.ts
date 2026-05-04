@@ -15,12 +15,12 @@ import { CreateEnrollmentDto } from './dto/create-enrollment.dto';
 import { UpdateEnrollmentDto } from './dto/update-enrollment.dto';
 import { EnrollmentStatus } from './entities/enrollment.entity';
 import { PaginationQueryDto } from '@common/dto/pagination.dto';
-import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
+import { CognitoAuthGuard } from '@common/guards/cognito-auth.guard';
 import { RolesGuard } from '@common/guards/roles.guard';
 import { Roles } from '@common/decorators/roles.decorator';
 
 @Controller('enrollments')
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(CognitoAuthGuard, RolesGuard)
 export class EnrollmentsController {
   constructor(private readonly enrollmentsService: EnrollmentsService) {}
 
@@ -45,9 +45,9 @@ export class EnrollmentsController {
     return this.enrollmentsService.findByCourse(courseId);
   }
 
-  @Get('student/:studentId')
-  findByStudent(@Param('studentId', ParseIntPipe) studentId: number) {
-    return this.enrollmentsService.findByStudent(studentId);
+  @Get('student/:cognitoId')
+  findByStudent(@Param('cognitoId') cognitoId: string) {
+    return this.enrollmentsService.findByCognitoId(cognitoId);
   }
 
   @Put(':id')

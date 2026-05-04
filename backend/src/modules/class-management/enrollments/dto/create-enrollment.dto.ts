@@ -1,9 +1,9 @@
-import { IsNumber, IsOptional, IsEnum } from 'class-validator';
+import { IsString, IsNumber, IsOptional, IsEnum } from 'class-validator';
 import { EnrollmentStatus } from '../entities/enrollment.entity';
 
 export class CreateEnrollmentDto {
-  @IsNumber()
-  studentId: number;
+  @IsString()
+  cognitoId: string;
 
   @IsNumber()
   courseId: number;

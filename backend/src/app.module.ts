@@ -10,13 +10,12 @@ import { Enrollment } from '@modules/class-management/enrollments/entities/enrol
 import { CoursesModule } from '@modules/class-management/courses/courses.module';
 import { Course } from '@modules/class-management/courses/entities/course.entity';
 import { AuthModule } from '@modules/user-management/auth/auth.module';
-import { UsersModule } from '@modules/user-management/users/users.module';
-import { User } from '@modules/user-management/users/entities/user.entity';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      isGlobal: true, // Đọc biến môi trường toàn cục
+      isGlobal: true,
+      envFilePath: [`.env.${process.env.NODE_ENV}`, '.env'],
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -27,12 +26,11 @@ import { User } from '@modules/user-management/users/entities/user.entity';
         username: configService.get('DB_USERNAME', 'postgres'),
         password: configService.get('DB_PASSWORD', 'postgres'),
         database: configService.get('DB_DATABASE', 'school'),
-        entities: [User, Course, Class, Enrollment],
-        synchronize: true, // Tự động tạo bảng (chỉ dùng dev)
+        entities: [Course, Class, Enrollment],
+        synchronize: true,
       }),
       inject: [ConfigService],
     }),
-    UsersModule,
     AuthModule,
     ClassesModule,
     EnrollmentsModule,

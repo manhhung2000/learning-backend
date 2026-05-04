@@ -4,7 +4,7 @@ services:
     container_name: db
     restart: always
     env_file:
-      - ../../.env
+      - ../../.env.development
     environment:
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
@@ -28,7 +28,7 @@ services:
     container_name: api
     restart: always
     env_file:
-      - ../../.env
+      - ../../.env.development
     environment:
       DB_HOST: db
       DB_PORT: ${DB_PORT}

@@ -1,14 +1,7 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ROLES_KEY } from '../decorators/roles.decorator';
-
-interface RequestWithUser {
-  user?: {
-    role?: string;
-    [key: string]: unknown;
-  };
-  [key: string]: unknown;
-}
+import { CognitoUser } from '@modules/user-management/auth/cognito.strategy';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -20,19 +13,12 @@ export class RolesGuard implements CanActivate {
       [context.getHandler(), context.getClass()],
     );
 
-    if (!requiredRoles) {
-      return true;
-    }
+    if (!requiredRoles) return true;
 
-    const request = context.switchToHttp().getRequest<RequestWithUser>();
-    const user = request.user;
+    const { user } = context.switchToHttp().getRequest<{ user: CognitoUser }>();
+    if (!user) return false;
 
-    // Check if user exists and has role
-    if (!user || !user.role) {
-      return false;
-    }
-
-    // Check if user's role matches any of the required roles
-    return requiredRoles.some((role) => user.role === role);
+    const groups = user['cognito:groups'] ?? [];
+    return requiredRoles.some((role) => groups.includes(role));
   }
 }

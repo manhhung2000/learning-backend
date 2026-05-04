@@ -14,12 +14,12 @@ import { CoursesService } from './courses.service';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
 import { PaginationQueryDto } from '@common/dto/pagination.dto';
-import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
+import { CognitoAuthGuard } from '@common/guards/cognito-auth.guard';
 import { RolesGuard } from '@common/guards/roles.guard';
 import { Roles } from '@common/decorators/roles.decorator';
 
 @Controller('courses')
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(CognitoAuthGuard, RolesGuard)
 export class CoursesController {
   constructor(private readonly coursesService: CoursesService) {}
 
@@ -44,9 +44,9 @@ export class CoursesController {
     return this.coursesService.findByClass(classId);
   }
 
-  @Get('teacher/:teacherId')
-  findByTeacher(@Param('teacherId', ParseIntPipe) teacherId: number) {
-    return this.coursesService.findByTeacher(teacherId);
+  @Get('teacher/:cognitoId')
+  findByTeacher(@Param('cognitoId') cognitoId: string) {
+    return this.coursesService.findByCognitoId(cognitoId);
   }
 
   @Put(':id')

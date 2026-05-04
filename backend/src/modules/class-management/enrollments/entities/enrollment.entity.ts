@@ -7,7 +7,6 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { User } from '@modules/user-management/users/entities/user.entity';
 import { Course } from '@modules/class-management/courses/entities/course.entity';
 
 export enum EnrollmentStatus {
@@ -21,8 +20,8 @@ export class Enrollment {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ name: 'student_id' })
-  studentId: number;
+  @Column({ name: 'cognito_id' })
+  cognitoId: string;
 
   @Column({ name: 'course_id' })
   courseId: number;
@@ -53,10 +52,4 @@ export class Enrollment {
   })
   @JoinColumn({ name: 'course_id' })
   course: Course;
-
-  @ManyToOne(() => User, {
-    onDelete: 'CASCADE',
-  })
-  @JoinColumn({ name: 'student_id' })
-  student: User;
 }

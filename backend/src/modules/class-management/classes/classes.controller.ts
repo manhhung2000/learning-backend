@@ -14,12 +14,12 @@ import { ClassesService } from './classes.service';
 import { CreateClassDto } from './dto/create-class.dto';
 import { UpdateClassDto } from './dto/update-class.dto';
 import { PaginationQueryDto } from '@common/dto/pagination.dto';
-import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
+import { CognitoAuthGuard } from '@common/guards/cognito-auth.guard';
 import { RolesGuard } from '@common/guards/roles.guard';
 import { Roles } from '@common/decorators/roles.decorator';
 
 @Controller('classes')
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(CognitoAuthGuard, RolesGuard)
 export class ClassesController {
   constructor(private readonly classesService: ClassesService) {}
 

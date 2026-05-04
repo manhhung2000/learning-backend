@@ -7,7 +7,6 @@ import {
   JoinColumn,
   CreateDateColumn,
 } from 'typeorm';
-import { User } from '@modules/user-management/users/entities/user.entity';
 import { Class } from '@modules/class-management/classes/entities/class.entity';
 import { Enrollment } from '@modules/class-management/enrollments/entities/enrollment.entity';
 
@@ -16,8 +15,8 @@ export class Course {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ name: 'teacher_id' })
-  teacherId: number;
+  @Column({ name: 'cognito_id' })
+  cognitoId: string;
 
   @Column({ name: 'subject_name' })
   subjectName: string;
@@ -46,15 +45,7 @@ export class Course {
   @OneToMany(() => Enrollment, (enrollment) => enrollment.course)
   enrollments: Enrollment[];
 
-  @ManyToOne(() => User, {
-    onDelete: 'RESTRICT',
-  })
-  @JoinColumn({ name: 'teacher_id' })
-  teacher: User;
-
-  @ManyToOne(() => Class, {
-    onDelete: 'RESTRICT',
-  })
+  @ManyToOne(() => Class, { onDelete: 'RESTRICT' })
   @JoinColumn({ name: 'class_id' })
   class: Class;
 }

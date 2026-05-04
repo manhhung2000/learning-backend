@@ -1,8 +1,8 @@
-import { IsNumber, IsString, IsOptional, IsObject } from 'class-validator';
+import { IsString, IsNumber, IsOptional, IsObject } from 'class-validator';
 
 export class CreateCourseDto {
-  @IsNumber()
-  teacherId: number;
+  @IsString()
+  cognitoId: string;
 
   @IsString()
   subjectName: string;

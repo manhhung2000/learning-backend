@@ -1,8 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In, Like } from 'typeorm';
+import { Repository, In, Like, FindOptionsWhere } from 'typeorm';
 import { Class } from './entities/class.entity';
-import { User } from '@modules/user-management/users/entities/user.entity';
 import { Course } from '@modules/class-management/courses/entities/course.entity';
 import {
   Enrollment,
@@ -15,15 +14,12 @@ import {
   PaginationQueryDto,
   PaginatedResult,
 } from '@common/dto/pagination.dto';
-import { FindOptionsWhere } from 'typeorm';
 
 @Injectable()
 export class ClassesService {
   constructor(
     @InjectRepository(Class)
     private classRepository: Repository<Class>,
-    @InjectRepository(User)
-    private userRepository: Repository<User>,
     @InjectRepository(Course)
     private courseRepository: Repository<Course>,
     @InjectRepository(Enrollment)
@@ -37,10 +33,7 @@ export class ClassesService {
   }
 
   async findAll(): Promise<Class[]> {
-    const classes = await this.classRepository.find({
-      relations: ['courses'],
-    });
-    return classes;
+    return this.classRepository.find({ relations: ['courses'] });
   }
 
   async findAllWithPagination(
@@ -50,9 +43,7 @@ export class ClassesService {
     const skip = (page - 1) * pageSize;
 
     const whereCondition: FindOptionsWhere<Class> = {};
-    if (search) {
-      whereCondition.name = Like(`%${search}%`);
-    }
+    if (search) whereCondition.name = Like(`%${search}%`);
 
     const [data, total] = await this.classRepository.findAndCount({
       where: whereCondition,
@@ -66,7 +57,7 @@ export class ClassesService {
       data,
       total,
       currentPage: page,
-      pageSize: pageSize,
+      pageSize,
       totalPage: Math.ceil(total / pageSize),
     };
   }
@@ -76,9 +67,7 @@ export class ClassesService {
       where: { id },
       relations: ['courses'],
     });
-    if (!cls) {
-      throw new NotFoundException(`Class with ID ${id} not found`);
-    }
+    if (!cls) throw new NotFoundException(`Class with ID ${id} not found`);
     return cls;
   }
 
@@ -93,28 +82,17 @@ export class ClassesService {
     await this.classRepository.remove(cls);
   }
 
-  async getStudents(classId: number): Promise<User[]> {
-    // Get courses for this class
-    const courses = await this.courseRepository.find({
-      where: { classId },
-    });
+  // Trả về danh sách cognitoId của students đang active trong class
+  async getStudents(classId: number): Promise<string[]> {
+    const courses = await this.courseRepository.find({ where: { classId } });
+    if (courses.length === 0) return [];
 
-    if (courses.length === 0) {
-      return [];
-    }
-
-    // Get course IDs
     const courseIds = courses.map((c) => c.id);
-
-    // Get enrollments for these courses
     const enrollments = await this.enrollmentRepository.find({
-      where: {
-        courseId: In(courseIds),
-        status: EnrollmentStatus.ACTIVE,
-      },
-      relations: ['student'],
+      where: { courseId: In(courseIds), status: EnrollmentStatus.ACTIVE },
     });
 
-    return enrollments.map((e: Enrollment): User => e.student);
+    // Unique cognitoIds
+    return [...new Set(enrollments.map((e) => e.cognitoId))];
   }
 }
