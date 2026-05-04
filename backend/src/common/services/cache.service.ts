@@ -6,6 +6,7 @@ import type { Cache } from 'cache-manager';
 export class CacheService {
   constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {}
 
+  // Cache Stampede
   async getOrSet<T>(key: string, fetchFn: () => Promise<T>): Promise<T> {
     const cached = await this.cacheManager.get<T>(key);
     if (cached) return cached;

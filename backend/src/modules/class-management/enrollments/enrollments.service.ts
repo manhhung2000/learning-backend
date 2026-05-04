@@ -97,20 +97,17 @@ export class EnrollmentsService {
   }
 
   async findByCourse(courseId: number): Promise<Enrollment[]> {
-    return this.cacheService.getOrSet(
-      `enrollments:course:${courseId}`,
-      () => this.enrollmentRepository.find({ where: { courseId } }),
+    return this.cacheService.getOrSet(`enrollments:course:${courseId}`, () =>
+      this.enrollmentRepository.find({ where: { courseId } }),
     );
   }
 
   async findByCognitoId(cognitoId: string): Promise<Enrollment[]> {
-    return this.cacheService.getOrSet(
-      `enrollments:student:${cognitoId}`,
-      () =>
-        this.enrollmentRepository.find({
-          where: { cognitoId },
-          relations: ['course'],
-        }),
+    return this.cacheService.getOrSet(`enrollments:student:${cognitoId}`, () =>
+      this.enrollmentRepository.find({
+        where: { cognitoId },
+        relations: ['course'],
+      }),
     );
   }
 
