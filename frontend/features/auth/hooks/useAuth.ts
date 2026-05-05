@@ -54,8 +54,14 @@ export const useAuth = () => {
       })
       window.location.href = '/login?registered=1'
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Registration failed'
-      setError(message)
+      if (
+        err instanceof Error &&
+        (err.name === 'UsernameExistsException' || err.name === 'AliasExistsException')
+      ) {
+        setError('An account with this email already exists.')
+      } else {
+        setError(err instanceof Error ? err.message : 'Registration failed')
+      }
     } finally {
       setLoading(false)
     }
