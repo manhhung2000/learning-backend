@@ -2,7 +2,7 @@ import client from '@lib/api/client'
 import type { Enrollment, EnrollmentStatus, PaginatedResponse } from '@models/api.types'
 
 interface CreateEnrollmentPayload {
-  studentId: number
+  cognitoId: string
   courseId: number
 }
 

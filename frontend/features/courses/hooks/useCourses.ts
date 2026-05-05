@@ -8,7 +8,7 @@ import type { Course } from '@models/api.types'
 
 interface CoursePayload {
   subjectName: string
-  teacherId: number
+  cognitoId: string
   classId: number
   academicYear: string
   semester: string

@@ -17,7 +17,7 @@ if (typeof window !== 'undefined') {
     new CookieStorage({
       domain: process.env.NODE_ENV === 'production' ? process.env.NEXT_PUBLIC_DOMAIN! : 'localhost',
       path: '/',
-      secure: process.env.NODE_ENV === 'production',
+      secure: false,
       sameSite: 'lax',
     }),
   )

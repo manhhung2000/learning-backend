@@ -10,7 +10,8 @@ import type { Class } from '@models/api.types'
 
 export default function ClassesPage() {
   const { data, total, page, limit, loading, goToPage, create, update, remove } = useClasses()
-  const { role } = useAuthStore()
+  const { user } = useAuthStore()
+  const role = user?.role
   const [selected, setSelected] = useState<Class | null | 'new'>(null)
 
   const canEdit = role === 'ADMIN' || role === 'TEACHER'

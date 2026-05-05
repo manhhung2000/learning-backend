@@ -20,7 +20,7 @@ export const useEnrollments = () => {
     reload()
   }, [page, limit])
 
-  const create = async (payload: { studentId: number; courseId: number }) => {
+  const create = async (payload: { cognitoId: string; courseId: number }) => {
     await enrollmentsApi.create(payload)
     await reload()
   }

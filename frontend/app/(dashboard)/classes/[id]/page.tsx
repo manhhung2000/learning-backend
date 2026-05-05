@@ -42,7 +42,7 @@ export default function ClassDetailPage() {
         <h2 className="mb-3 text-base font-medium text-gray-700">Students</h2>
         <Table
           columns={columns}
-          data={students as unknown as Record<string, unknown>[]}
+          data={students}
           loading={loading}
           emptyText="No students enrolled"
         />

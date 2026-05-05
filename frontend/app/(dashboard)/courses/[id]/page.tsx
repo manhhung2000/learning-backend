@@ -62,7 +62,7 @@ export default function CourseDetailPage() {
         <h2 className="mb-3 text-base font-medium text-gray-700">Enrollments</h2>
         <Table
           columns={columns}
-          data={enrollments as unknown as Record<string, unknown>[]}
+          data={enrollments}
           loading={loading}
           emptyText="No enrollments yet"
         />

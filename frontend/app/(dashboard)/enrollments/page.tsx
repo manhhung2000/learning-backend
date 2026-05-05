@@ -10,7 +10,8 @@ import { Button } from '@shared/components/ui/Button'
 export default function EnrollmentsPage() {
   const { data, total, page, limit, loading, goToPage, create, updateStatus, remove } =
     useEnrollments()
-  const { role } = useAuthStore()
+  const { user } = useAuthStore()
+  const role = user?.role
   const [showForm, setShowForm] = useState(false)
 
   const canManage = role === 'ADMIN' || role === 'TEACHER'

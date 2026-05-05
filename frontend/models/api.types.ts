@@ -1,5 +1,14 @@
 export type UserRole = 'ADMIN' | 'TEACHER' | 'STUDENT'
 
+export interface User {
+  id: number
+  cognitoId: string
+  name: string
+  email: string
+  role: UserRole
+  createdAt: string
+}
+
 export type EnrollmentStatus = 'active' | 'inactive' | 'dropped'
 
 export interface Class {

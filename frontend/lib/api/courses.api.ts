@@ -3,7 +3,7 @@ import type { Course, PaginatedResponse } from '@models/api.types'
 
 interface CoursePayload {
   subjectName: string
-  teacherId: number
+  cognitoId: string
   classId: number
   academicYear: string
   semester: string
@@ -23,8 +23,8 @@ export const coursesApi = {
   findByClass: (classId: number) =>
     client.get<Course[]>(`/courses/class/${classId}`).then((r) => r.data),
 
-  findByTeacher: (teacherId: number) =>
-    client.get<Course[]>(`/courses/teacher/${teacherId}`).then((r) => r.data),
+  findByTeacher: (cognitoId: string) =>
+    client.get<Course[]>(`/courses/teacher/${cognitoId}`).then((r) => r.data),
 
   create: (payload: CoursePayload) => client.post<Course>('/courses', payload).then((r) => r.data),
 

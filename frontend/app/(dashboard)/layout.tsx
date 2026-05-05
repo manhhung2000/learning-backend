@@ -1,7 +1,23 @@
+'use client'
+
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Sidebar } from '@shared/components/layout/Sidebar'
 import { Header } from '@shared/components/layout/Header'
+import { useAuthStore } from '@store/auth.store'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const { user, initialized } = useAuthStore()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (initialized && !user) {
+      router.replace('/login')
+    }
+  }, [initialized, user, router])
+
+  if (!initialized) return null
+
   return (
     <div className="flex h-screen">
       <Sidebar />
