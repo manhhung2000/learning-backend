@@ -47,11 +47,13 @@ export const useAuth = () => {
     setLoading(true)
     setError(null)
     try {
+      const username = crypto.randomUUID()
       const { nextStep } = await signUp({
-        username: crypto.randomUUID(),
+        username,
         password: payload.password,
         options: { userAttributes: { email: payload.email, name: payload.name } },
       })
+      sessionStorage.setItem('pendingUsername', username)
       if (nextStep.signUpStep === 'CONFIRM_SIGN_UP') {
         window.location.href = `/confirm?email=${encodeURIComponent(payload.email)}`
       } else {
@@ -75,7 +77,9 @@ export const useAuth = () => {
     setLoading(true)
     setError(null)
     try {
-      await confirmSignUp({ username: email, confirmationCode: code })
+      const username = sessionStorage.getItem('pendingUsername') ?? email
+      await confirmSignUp({ username, confirmationCode: code })
+      sessionStorage.removeItem('pendingUsername')
       window.location.href = '/login?registered=1'
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Confirmation failed')

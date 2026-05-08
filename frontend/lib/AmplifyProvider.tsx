@@ -15,7 +15,7 @@ if (typeof window !== 'undefined') {
   })
   cognitoUserPoolsTokenProvider.setKeyValueStorage(
     new CookieStorage({
-      domain: process.env.NODE_ENV === 'production' ? process.env.NEXT_PUBLIC_DOMAIN! : 'localhost',
+      domain: window.location.hostname,
       path: '/',
       secure: false,
       sameSite: 'lax',
