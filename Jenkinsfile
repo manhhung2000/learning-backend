@@ -65,29 +65,28 @@ pipeline {
                     [$class: 'AmazonWebServicesCredentialsBinding',
                         credentialsId: 'aws-credentials']
                 ]) {
-                    // SSH vào EC2, pull image mới và restart container
-                    sh '''
-                        ssh -i $PEM -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} "
+                    sh """
+                        ssh -i \$PEM -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} '
                             ECR_REGISTRY=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
                             ECR_IMAGE=\$ECR_REGISTRY/${ECR_REPO}
 
-                            aws ecr get-login-password --region ${AWS_REGION} \
+                            aws ecr get-login-password --region ${AWS_REGION} \\
                                 | docker login --username AWS --password-stdin \$ECR_REGISTRY
 
                             docker rm -f api
                             docker pull \$ECR_IMAGE:latest
-                            docker run -d \
-                                --name api \
-                                --network compose_default \
-                                --env-file ~/backend/.env.production \
-                                -e DB_HOST=db \
-                                -e REDIS_HOST=redis \
-                                -e NODE_ENV=production \
-                                -p ${APP_PORT}:${APP_PORT} \
-                                --restart always \
+                            docker run -d \\
+                                --name api \\
+                                --network compose_default \\
+                                --env-file ~/backend/.env.production \\
+                                -e DB_HOST=db \\
+                                -e REDIS_HOST=redis \\
+                                -e NODE_ENV=production \\
+                                -p ${APP_PORT}:${APP_PORT} \\
+                                --restart always \\
                                 \$ECR_IMAGE:latest
-                        "
-                    '''
+                        '
+                    """
                 }
             }
         }
