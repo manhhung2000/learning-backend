@@ -65,13 +65,6 @@ pipeline {
                     [$class: 'AmazonWebServicesCredentialsBinding',
                         credentialsId: 'aws-credentials']
                 ]) {
-                    // Sync file .env lên EC2
-                    sh '''
-                        scp -i $PEM -o StrictHostKeyChecking=no \
-                            backend/.env.production \
-                            ${EC2_USER}@${EC2_HOST}:~/backend/.env.production
-                    '''
-
                     // SSH vào EC2, pull image mới và restart container
                     sh '''
                         ssh -i $PEM -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} "
