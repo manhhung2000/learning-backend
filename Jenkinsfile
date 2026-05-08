@@ -2,10 +2,10 @@ pipeline {
     agent any
 
     environment {
-        AWS_REGION      = 'ap-northeast-2'
+        AWS_REGION      = 'us-east-1'
         ECR_REPO        = 'learning-backend'
         EC2_USER        = 'ec2-user'
-        EC2_HOST        = '34.229.207.207'
+        EC2_HOST        = '34.207.170.82'
         APP_PORT        = '4000'
     }
 
