@@ -3,7 +3,7 @@ include .env.production
 ECR_REGISTRY = $(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com
 ECR_IMAGE = $(ECR_REGISTRY)/$(ECR_REPO)
 EC2_USER = ec2-user
-EC2_HOST = 34.229.207.207
+EC2_HOST = 34.207.170.82
 PEM = /Users/admin/Desktop/pem/learning-backend-key.pem
 SSH = ssh -i $(PEM) $(EC2_USER)@$(EC2_HOST)
 
