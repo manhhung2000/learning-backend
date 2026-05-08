@@ -27,6 +27,7 @@ export interface Course {
   schedule: Record<string, unknown> | null
   startDate: string | null
   endDate: string | null
+  thumbnailKey: string | null
   createdAt: string
   class?: Class
 }

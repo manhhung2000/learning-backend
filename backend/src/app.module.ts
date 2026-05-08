@@ -13,6 +13,7 @@ import { Enrollment } from '@modules/class-management/enrollments/entities/enrol
 import { CoursesModule } from '@modules/class-management/courses/courses.module';
 import { Course } from '@modules/class-management/courses/entities/course.entity';
 import { AuthModule } from '@modules/user-management/auth/auth.module';
+import { S3Module } from '@modules/storage/s3.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { AuthModule } from '@modules/user-management/auth/auth.module';
     }),
     CacheServiceModule,
     AuthModule,
+    S3Module,
     ClassesModule,
     EnrollmentsModule,
     CoursesModule,

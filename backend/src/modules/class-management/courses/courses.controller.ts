@@ -9,7 +9,11 @@ import {
   ParseIntPipe,
   Query,
   UseGuards,
+  UploadedFile,
+  UseInterceptors,
+  BadRequestException,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { CoursesService } from './courses.service';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
@@ -56,6 +60,17 @@ export class CoursesController {
     @Body() updateDto: UpdateCourseDto,
   ) {
     return this.coursesService.update(id, updateDto);
+  }
+
+  @Post(':id/thumbnail')
+  @Roles('ADMIN', 'TEACHER')
+  @UseInterceptors(FileInterceptor('file'))
+  uploadThumbnail(
+    @Param('id', ParseIntPipe) id: number,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    if (!file) throw new BadRequestException('File is required');
+    return this.coursesService.uploadThumbnail(id, file);
   }
 
   @Delete(':id')

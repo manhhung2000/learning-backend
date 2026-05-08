@@ -33,6 +33,9 @@ export class Course {
   @Column({ type: 'jsonb', nullable: true })
   schedule: Record<string, unknown>;
 
+  @Column({ name: 'thumbnail_key', nullable: true })
+  thumbnailKey: string;
+
   @Column({ name: 'start_date', type: 'date', nullable: true })
   startDate: Date;
 

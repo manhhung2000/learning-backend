@@ -6,6 +6,7 @@ import { coursesApi } from '@lib/api/courses.api'
 import { enrollmentsApi } from '@lib/api/enrollments.api'
 import { Badge } from '@shared/components/ui/Badge'
 import { Table } from '@shared/components/ui/Table'
+import { ThumbnailUpload } from '@features/courses/components/ThumbnailUpload'
 import { formatDate, formatEnrollmentStatus } from '@shared/utils/format'
 import type { Course, Enrollment, EnrollmentStatus } from '@models/api.types'
 
@@ -52,11 +53,18 @@ export default function CourseDetailPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-xl font-semibold text-gray-900">{course?.subjectName ?? '...'}</h1>
-        <p className="text-sm text-gray-500">
-          {course?.academicYear} · Semester {course?.semester}
-        </p>
+      <div className="flex gap-6">
+        <div className="w-64 shrink-0">
+          {!loading && course && (
+            <ThumbnailUpload courseId={course.id} thumbnailUrl={null} />
+          )}
+        </div>
+        <div>
+          <h1 className="text-xl font-semibold text-gray-900">{course?.subjectName ?? '...'}</h1>
+          <p className="text-sm text-gray-500">
+            {course?.academicYear} · Semester {course?.semester}
+          </p>
+        </div>
       </div>
       <div>
         <h2 className="mb-3 text-base font-medium text-gray-700">Enrollments</h2>

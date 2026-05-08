@@ -32,4 +32,14 @@ export const coursesApi = {
     client.put<Course>(`/courses/${id}`, payload).then((r) => r.data),
 
   remove: (id: number) => client.delete(`/courses/${id}`).then((r) => r.data),
+
+  uploadThumbnail: (id: number, file: File) => {
+    const form = new FormData()
+    form.append('file', file)
+    return client
+      .post<{ thumbnailUrl: string }>(`/courses/${id}/thumbnail`, form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+      .then((r) => r.data)
+  },
 }

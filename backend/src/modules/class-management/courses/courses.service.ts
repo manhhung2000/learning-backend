@@ -14,6 +14,7 @@ import {
   PaginationQueryDto,
   PaginatedResult,
 } from '@common/dto/pagination.dto';
+import { S3Service } from '@modules/storage/s3.service';
 
 @Injectable()
 export class CoursesService {
@@ -23,6 +24,7 @@ export class CoursesService {
     @InjectRepository(Class)
     private classRepository: Repository<Class>,
     private cacheService: CacheService,
+    private s3Service: S3Service,
   ) {}
 
   async create(createDto: CreateCourseDto): Promise<Course> {
@@ -119,5 +121,20 @@ export class CoursesService {
     const course = await this.findOne(id);
     await this.courseRepository.remove(course);
     await this.cacheService.del(`course:${id}`);
+  }
+
+  async uploadThumbnail(id: number, file: Express.Multer.File): Promise<{ thumbnailUrl: string }> {
+    const course = await this.findOne(id);
+
+    if (course.thumbnailKey) {
+      await this.s3Service.delete(course.thumbnailKey);
+    }
+
+    const key = await this.s3Service.upload(file, 'thumbnails');
+    await this.courseRepository.update(id, { thumbnailKey: key });
+    await this.cacheService.del(`course:${id}`);
+
+    const thumbnailUrl = await this.s3Service.getPresignedUrl(key);
+    return { thumbnailUrl };
   }
 }
