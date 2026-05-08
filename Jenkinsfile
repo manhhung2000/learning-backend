@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         AWS_REGION      = 'us-east-1'
+        AWS_ACCOUNT_ID  = '114490782458'
         ECR_REPO        = 'learning-backend'
         EC2_USER        = 'ec2-user'
         EC2_HOST        = '34.207.170.82'
