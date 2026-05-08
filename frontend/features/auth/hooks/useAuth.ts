@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { signIn, signUp, confirmSignIn } from 'aws-amplify/auth'
+import { signIn, signUp, confirmSignIn, confirmSignUp } from 'aws-amplify/auth'
 import { authStore } from '@store/auth.store'
 
 export const useAuth = () => {
@@ -47,12 +47,16 @@ export const useAuth = () => {
     setLoading(true)
     setError(null)
     try {
-      await signUp({
-        username: payload.email,
+      const { nextStep } = await signUp({
+        username: crypto.randomUUID(),
         password: payload.password,
         options: { userAttributes: { email: payload.email, name: payload.name } },
       })
-      window.location.href = '/login?registered=1'
+      if (nextStep.signUpStep === 'CONFIRM_SIGN_UP') {
+        window.location.href = `/confirm?email=${encodeURIComponent(payload.email)}`
+      } else {
+        window.location.href = '/login?registered=1'
+      }
     } catch (err: unknown) {
       if (
         err instanceof Error &&
@@ -67,5 +71,18 @@ export const useAuth = () => {
     }
   }
 
-  return { login, submitNewPassword, register, loading, error, requiresNewPassword }
+  const confirm = async (email: string, code: string) => {
+    setLoading(true)
+    setError(null)
+    try {
+      await confirmSignUp({ username: email, confirmationCode: code })
+      window.location.href = '/login?registered=1'
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Confirmation failed')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return { login, submitNewPassword, register, confirm, loading, error, requiresNewPassword }
 }

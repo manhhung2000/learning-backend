@@ -10,6 +10,7 @@ interface FormValues {
   name: string
   email: string
   password: string
+  confirmPassword: string
 }
 
 export const RegisterForm = () => {
@@ -17,10 +18,11 @@ export const RegisterForm = () => {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<FormValues>()
 
-  const onSubmit = (data: FormValues) => registerUser(data)
+  const onSubmit = ({ name, email, password }: FormValues) => registerUser({ name, email, password })
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
@@ -45,6 +47,16 @@ export const RegisterForm = () => {
         {...register('password', {
           required: 'Password is required',
           minLength: { value: 8, message: 'Minimum 8 characters' },
+        })}
+      />
+      <Input
+        label="Confirm password"
+        type="password"
+        placeholder="••••••••"
+        error={errors.confirmPassword?.message}
+        {...register('confirmPassword', {
+          required: 'Please confirm your password',
+          validate: (val) => val === watch('password') || 'Passwords do not match',
         })}
       />
       {error && <p className="text-sm text-red-500">{error}</p>}
