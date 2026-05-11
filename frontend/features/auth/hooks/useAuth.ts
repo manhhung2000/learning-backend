@@ -1,13 +1,14 @@
 'use client'
 
 import { useState } from 'react'
-import { signIn, signUp, confirmSignIn, confirmSignUp } from 'aws-amplify/auth'
+import { signIn, signUp, confirmSignIn, confirmSignUp, resendSignUpCode } from 'aws-amplify/auth'
 import { authStore } from '@store/auth.store'
 
 export const useAuth = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [requiresNewPassword, setRequiresNewPassword] = useState(false)
+  const [resendSuccess, setResendSuccess] = useState(false)
 
   const login = async (email: string, password: string) => {
     setLoading(true)
@@ -21,8 +22,12 @@ export const useAuth = () => {
       await authStore.init()
       window.location.href = '/'
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Login failed'
-      setError(message)
+      if (err instanceof Error && err.name === 'UserNotConfirmedException') {
+        await resendSignUpCode({ username: email })
+        window.location.href = `/confirm?email=${encodeURIComponent(email)}`
+      } else {
+        setError(err instanceof Error ? err.message : 'Login failed')
+      }
     } finally {
       setLoading(false)
     }
@@ -47,24 +52,22 @@ export const useAuth = () => {
     setLoading(true)
     setError(null)
     try {
-      const username = crypto.randomUUID()
       const { nextStep } = await signUp({
-        username,
+        username: payload.email,
         password: payload.password,
         options: { userAttributes: { email: payload.email, name: payload.name } },
       })
-      sessionStorage.setItem('pendingUsername', username)
       if (nextStep.signUpStep === 'CONFIRM_SIGN_UP') {
+        sessionStorage.setItem('pendingPassword', payload.password)
         window.location.href = `/confirm?email=${encodeURIComponent(payload.email)}`
       } else {
-        window.location.href = '/login?registered=1'
+        window.location.href = '/'
       }
     } catch (err: unknown) {
-      if (
-        err instanceof Error &&
-        (err.name === 'UsernameExistsException' || err.name === 'AliasExistsException')
-      ) {
-        setError('An account with this email already exists.')
+      if (err instanceof Error && err.name === 'UsernameExistsException') {
+        // User exists but may be unconfirmed — resend code and redirect to confirm
+        await resendSignUpCode({ username: payload.email })
+        window.location.href = `/confirm?email=${encodeURIComponent(payload.email)}`
       } else {
         setError(err instanceof Error ? err.message : 'Registration failed')
       }
@@ -77,10 +80,14 @@ export const useAuth = () => {
     setLoading(true)
     setError(null)
     try {
-      const username = sessionStorage.getItem('pendingUsername') ?? email
-      await confirmSignUp({ username, confirmationCode: code })
-      sessionStorage.removeItem('pendingUsername')
-      window.location.href = '/login?registered=1'
+      await confirmSignUp({ username: email, confirmationCode: code })
+      const password = sessionStorage.getItem('pendingPassword')
+      if (password) {
+        sessionStorage.removeItem('pendingPassword')
+        await signIn({ username: email, password })
+        await authStore.init()
+      }
+      window.location.href = '/'
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Confirmation failed')
     } finally {
@@ -88,5 +95,19 @@ export const useAuth = () => {
     }
   }
 
-  return { login, submitNewPassword, register, confirm, loading, error, requiresNewPassword }
+  const resendCode = async (email: string) => {
+    setLoading(true)
+    setError(null)
+    setResendSuccess(false)
+    try {
+      await resendSignUpCode({ username: email })
+      setResendSuccess(true)
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to resend code')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return { login, submitNewPassword, register, confirm, resendCode, loading, error, requiresNewPassword, resendSuccess }
 }
