@@ -22,7 +22,8 @@ export const RegisterForm = () => {
     formState: { errors },
   } = useForm<FormValues>()
 
-  const onSubmit = ({ name, email, password }: FormValues) => registerUser({ name, email, password })
+  const onSubmit = ({ name, email, password }: FormValues) =>
+    registerUser({ name, email, password })
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">

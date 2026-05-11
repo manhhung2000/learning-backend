@@ -31,7 +31,9 @@ export const ConfirmForm = ({ email }: { email: string }) => {
         {...register('code', { required: 'Code is required' })}
       />
       {error && <p className="text-sm text-red-500">{error}</p>}
-      {resendSuccess && <p className="text-sm text-emerald-600">A new code has been sent to your email.</p>}
+      {resendSuccess && (
+        <p className="text-sm text-emerald-600">A new code has been sent to your email.</p>
+      )}
       <Button type="submit" loading={loading} className="w-full">
         Confirm account
       </Button>

@@ -123,7 +123,10 @@ export class CoursesService {
     await this.cacheService.del(`course:${id}`);
   }
 
-  async uploadThumbnail(id: number, file: Express.Multer.File): Promise<{ thumbnailUrl: string }> {
+  async uploadThumbnail(
+    id: number,
+    file: Express.Multer.File,
+  ): Promise<{ thumbnailUrl: string }> {
     const course = await this.findOne(id);
 
     if (course.thumbnailKey) {

@@ -30,7 +30,9 @@ const ConfirmContent = () => {
             <span className="font-bold text-slate-800">LearningApp</span>
           </div>
           <h1 className="text-2xl font-bold text-slate-900">Verify your email</h1>
-          <p className="mt-1.5 text-sm text-slate-400 mb-8">Enter the 6-digit code from your email</p>
+          <p className="mt-1.5 text-sm text-slate-400 mb-8">
+            Enter the 6-digit code from your email
+          </p>
           <ConfirmForm email={email} />
         </div>
       </div>

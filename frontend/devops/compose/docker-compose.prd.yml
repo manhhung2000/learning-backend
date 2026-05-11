@@ -16,6 +16,6 @@ services:
     env_file:
       - ../../.env.production
     ports:
-      - "${FRONTEND_PORT}:${FRONTEND_PORT}"
+      - '${FRONTEND_PORT}:${FRONTEND_PORT}'
     environment:
       PORT: ${FRONTEND_PORT}

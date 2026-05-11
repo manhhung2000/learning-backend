@@ -55,9 +55,7 @@ export default function CourseDetailPage() {
     <div className="flex flex-col gap-6">
       <div className="flex gap-6">
         <div className="w-64 shrink-0">
-          {!loading && course && (
-            <ThumbnailUpload courseId={course.id} thumbnailUrl={null} />
-          )}
+          {!loading && course && <ThumbnailUpload courseId={course.id} thumbnailUrl={null} />}
         </div>
         <div>
           <h1 className="text-xl font-semibold text-gray-900">{course?.subjectName ?? '...'}</h1>

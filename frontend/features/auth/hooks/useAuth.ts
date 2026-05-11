@@ -109,5 +109,15 @@ export const useAuth = () => {
     }
   }
 
-  return { login, submitNewPassword, register, confirm, resendCode, loading, error, requiresNewPassword, resendSuccess }
+  return {
+    login,
+    submitNewPassword,
+    register,
+    confirm,
+    resendCode,
+    loading,
+    error,
+    requiresNewPassword,
+    resendSuccess,
+  }
 }

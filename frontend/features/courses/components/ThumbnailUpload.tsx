@@ -47,8 +47,19 @@ export const ThumbnailUpload = ({ courseId, thumbnailUrl: initialUrl }: Thumbnai
           </div>
         )}
       </div>
-      <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
-      <Button variant="ghost" size="sm" onClick={() => inputRef.current?.click()} disabled={uploading}>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleFileChange}
+      />
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => inputRef.current?.click()}
+        disabled={uploading}
+      >
         {previewUrl ? 'Change thumbnail' : 'Upload thumbnail'}
       </Button>
     </div>

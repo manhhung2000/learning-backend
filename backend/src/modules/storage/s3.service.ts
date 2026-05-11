@@ -19,7 +19,9 @@ export class S3Service {
       region: this.configService.get<string>('AWS_REGION'),
       credentials: {
         accessKeyId: this.configService.get<string>('AWS_ACCESS_KEY_ID')!,
-        secretAccessKey: this.configService.get<string>('AWS_SECRET_ACCESS_KEY')!,
+        secretAccessKey: this.configService.get<string>(
+          'AWS_SECRET_ACCESS_KEY',
+        )!,
       },
     });
     this.bucket = this.configService.get<string>('AWS_S3_BUCKET')!;
